@@ -11,6 +11,7 @@
 #define LEDPIN 5
 #define SMOKEPIN A2
 #define FIREPIN A3
+#define FLOODPIN 7
 #define DHTPIN A1// Digital pin connected to the DHT sensor 
 // Feather HUZZAH ESP8266 note: use pins 3, 4, 5, 12, 13 or 14 --
 // Pin 15 can work but DHT must be disconnected during program upload.
@@ -21,14 +22,16 @@
 DHT_Unified dht(DHTPIN, DHTTYPE);
 
 Atm_digital earthquake;
-Atm_button fire;
-Atm_button smoke;
+Atm_digital fire;
+Atm_digital smoke;
+Atm_digital flood;
 
 enum inputMsg{
   SENSOR_INFO,
   EARTHQUAKE,
   SMOKE,
   FIRE,
+  FLOOD,
   LED_ON,
   LED_OFF
 };
@@ -42,13 +45,16 @@ void setup()
     digitalWrite(LEDPIN, LOW);
     pinMode(SMOKEPIN, INPUT);
     pinMode(FIREPIN, INPUT);
+    pinMode(FLOODPIN, INPUT);
     dht.begin();
     earthquake.begin(EARTHPIN)
               .onChange(HIGH, earthQuakeSens);
     fire.begin(FIREPIN)
-        .onPress(fireSens);
+        .onChange(HIGH, fireSens);
     smoke.begin(SMOKEPIN)
-        .onPress(smokeSens);
+        .onChange(HIGH, smokeSens);
+    flood.begin(FLOODPIN)
+         .onChange(HIGH, floodSens);
 } 
 
 void loop() {
@@ -104,6 +110,10 @@ void fireSens(int idx, int v, int up) {
 
 void smokeSens(int idx, int v, int up) {
   Serial.println(SMOKE);
+}
+
+void floodSens(int idx, int v, int up) {
+  Serial.println(FLOOD);
 }
 
 void serialEvent() {
