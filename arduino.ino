@@ -7,6 +7,7 @@
 #include <DHT_U.h>
 
 #define EARTHPIN 2
+#define RAINPIN 8
 #define LEDPIN 5
 #define DHTPIN A1// Digital pin connected to the DHT sensor 
 // Feather HUZZAH ESP8266 note: use pins 3, 4, 5, 12, 13 or 14 --
@@ -29,33 +30,50 @@ void setup()
 {
     Serial.begin(9600);
     pinMode(EARTHPIN, INPUT);
+    pinMode(RAINPIN, INPUT);
     pinMode(LEDPIN, OUTPUT);
     digitalWrite(LEDPIN, LOW);
     dht.begin();
     mgr.addListener(new EvtPinListener(EARTHPIN, (EvtAction)earthQuakeSens));
 }
 
-bool getTemp()
+void sendSensorInfo() {
+  DynamicJsonDocument doc(38);
+  doc["temp"] = getTemp();
+  doc["hmd"] = getHumidity();
+  doc["rain"] = getRain();
+  serializeJsonPretty(doc, Serial);
+}
+
+float getTemp()
 {
-  DynamicJsonDocument doc(25);
   sensors_event_t event;
   dht.temperature().getEvent(&event);
   if (isnan(event.temperature)) {
-    Serial.println(F("Error reading temperature!"));
+    return 0;
   }
   else {
-    doc["temp"] = event.temperature;
+    return event.temperature;
   }
+}
+
+int getHumidity() {
+  sensors_event_t event;
   // Get humidity event and print its value.
   dht.humidity().getEvent(&event);
   if (isnan(event.relative_humidity)) {
-    Serial.println(F("Error reading humidity!"));
+    return 0;
   }
   else {
-    doc["hmd"] = event.relative_humidity;
+    return event.relative_humidity;
   }
-  serializeJsonPretty(doc, Serial);
-  return false;
+}
+
+bool getRain() {
+    if(digitalRead(RAINPIN) == 1) {
+      return false;  
+    }
+    return true;
 }
 
 bool earthQuakeSens() {
@@ -66,7 +84,7 @@ bool earthQuakeSens() {
 void serialEvent() {
   int data = Serial.parseInt();
   if(data == SENSOR_INFO){
-    getTemp();  
+    sendSensorInfo();  
   } else if (data == LED_ON) {
     digitalWrite(LEDPIN, HIGH); 
   } else if (data == LED_OFF) {
