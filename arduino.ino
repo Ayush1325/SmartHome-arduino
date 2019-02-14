@@ -8,6 +8,7 @@
 
 #define EARTHPIN 2
 #define RAINPIN 8
+#define CLOUDPIN 4
 #define LEDPIN 5
 #define FANPIN 6
 #define BUZZPIN 12
@@ -47,6 +48,7 @@ void setup()
     Serial.begin(9600);
     pinMode(EARTHPIN, INPUT);
     pinMode(RAINPIN, INPUT);
+    pinMode(CLOUDPIN, INPUT);
     pinMode(LEDPIN, OUTPUT);
     digitalWrite(LEDPIN, LOW);
     pinMode(FANPIN, OUTPUT);
@@ -72,10 +74,11 @@ void loop() {
 }
 
 void sendSensorInfo() {
-  DynamicJsonDocument doc(38);
+  DynamicJsonDocument doc(52);
   doc["temp"] = getTemp();
   doc["hmd"] = getHumidity();
   doc["rain"] = getRain();
+  doc["cloud"] = getCloud();
   serializeJsonPretty(doc, Serial);
 }
 
@@ -108,6 +111,13 @@ bool getRain() {
       return false;  
     }
     return true;
+}
+
+bool getCloud() {
+  if(digitalRead(CLOUDPIN) == 1) {
+    return false;  
+  }  
+  return true;
 }
 
 void earthQuakeSens(int idx, int v, int up) {
