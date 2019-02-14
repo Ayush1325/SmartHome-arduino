@@ -1,6 +1,6 @@
-#include <ArduinoJson.h>
+#include <Automaton.h>
 
-#include <Eventually.h>
+#include <ArduinoJson.h>
 
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
@@ -9,6 +9,8 @@
 #define EARTHPIN 2
 #define RAINPIN 8
 #define LEDPIN 5
+#define SMOKEPIN A2
+#define FIREPIN A3
 #define DHTPIN A1// Digital pin connected to the DHT sensor 
 // Feather HUZZAH ESP8266 note: use pins 3, 4, 5, 12, 13 or 14 --
 // Pin 15 can work but DHT must be disconnected during program upload.
@@ -17,11 +19,16 @@
 #define DHTTYPE DHT11     // DHT 11
 
 DHT_Unified dht(DHTPIN, DHTTYPE);
-EvtManager mgr;
+
+Atm_digital earthquake;
+Atm_button fire;
+Atm_button smoke;
 
 enum inputMsg{
   SENSOR_INFO,
   EARTHQUAKE,
+  SMOKE,
+  FIRE,
   LED_ON,
   LED_OFF
 };
@@ -33,8 +40,19 @@ void setup()
     pinMode(RAINPIN, INPUT);
     pinMode(LEDPIN, OUTPUT);
     digitalWrite(LEDPIN, LOW);
+    pinMode(SMOKEPIN, INPUT);
+    pinMode(FIREPIN, INPUT);
     dht.begin();
-    mgr.addListener(new EvtPinListener(EARTHPIN, (EvtAction)earthQuakeSens));
+    earthquake.begin(EARTHPIN)
+              .onChange(HIGH, earthQuakeSens);
+    fire.begin(FIREPIN)
+        .onPress(fireSens);
+    smoke.begin(SMOKEPIN)
+        .onPress(smokeSens);
+} 
+
+void loop() {
+  automaton.run();  
 }
 
 void sendSensorInfo() {
@@ -76,9 +94,16 @@ bool getRain() {
     return true;
 }
 
-bool earthQuakeSens() {
-    Serial.println(EARTHQUAKE);
-    return true;
+void earthQuakeSens(int idx, int v, int up) {
+   Serial.println(EARTHQUAKE);
+}
+
+void fireSens(int idx, int v, int up) {
+  Serial.println(FIRE);  
+}
+
+void smokeSens(int idx, int v, int up) {
+  Serial.println(SMOKE);
 }
 
 void serialEvent() {
@@ -91,5 +116,3 @@ void serialEvent() {
     digitalWrite(LEDPIN, LOW); 
   }
 }
-
-USE_EVENTUALLY_LOOP(mgr) // Use this instead of your loop() function.
