@@ -6,21 +6,23 @@
 #include <DHT.h>
 #include <DHT_U.h>
 
-#define EARTHPIN 2
-#define RAINPIN 8
-#define CLOUDPIN 4
+//Devices
 #define LEDPIN 5
 #define FANPIN 6
 #define BUZZPIN 12
+
+//Weather Sensors.
+#define EARTHPIN 2
+#define RAINPIN 8
+#define CLOUDPIN 4
+
+//Other Sensors.
 #define SMOKEPIN A2
 #define FIREPIN A3
 #define FLOODPIN 7
-#define DHTPIN A1// Digital pin connected to the DHT sensor 
-// Feather HUZZAH ESP8266 note: use pins 3, 4, 5, 12, 13 or 14 --
-// Pin 15 can work but DHT must be disconnected during program upload.
+#define DHTPIN A1
 
-// Uncomment the type of sensor in use:
-#define DHTTYPE DHT11     // DHT 11
+#define DHTTYPE DHT11
 
 DHT_Unified dht(DHTPIN, DHTTYPE);
 
@@ -46,25 +48,33 @@ enum inputMsg{
 void setup()
 {
     Serial.begin(9600);
-    pinMode(EARTHPIN, INPUT);
-    pinMode(RAINPIN, INPUT);
-    pinMode(CLOUDPIN, INPUT);
     pinMode(LEDPIN, OUTPUT);
     digitalWrite(LEDPIN, LOW);
     pinMode(FANPIN, OUTPUT);
     digitalWrite(FANPIN, LOW);
     pinMode(BUZZPIN, OUTPUT);
     digitalWrite(BUZZPIN, LOW);
+
+    pinMode(DHTPIN, INPUT);
+    pinMode(RAINPIN, INPUT);
+    pinMode(CLOUDPIN, INPUT);
+
+    pinMode(EARTHPIN, INPUT);
     pinMode(SMOKEPIN, INPUT);
     pinMode(FIREPIN, INPUT);
     pinMode(FLOODPIN, INPUT);
+    
     dht.begin();
+    
     earthquake.begin(EARTHPIN)
               .onChange(HIGH, earthQuakeSens);
+              
     fire.begin(FIREPIN)
         .onChange(HIGH, fireSens);
+        
     smoke.begin(SMOKEPIN)
-        .onChange(HIGH, smokeSens);
+         .onChange(HIGH, smokeSens);
+        
     flood.begin(FLOODPIN)
          .onChange(HIGH, floodSens);
 } 
