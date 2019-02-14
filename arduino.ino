@@ -1,3 +1,5 @@
+#include <ArduinoJson.h>
+
 #include <Eventually.h>
 
 #include <Adafruit_Sensor.h>
@@ -23,15 +25,14 @@ void setup()
 
 bool getTemp()
 {
+  DynamicJsonDocument doc(25);
   sensors_event_t event;
   dht.temperature().getEvent(&event);
   if (isnan(event.temperature)) {
     Serial.println(F("Error reading temperature!"));
   }
   else {
-    Serial.print(F("Temperature: "));
-    Serial.print(event.temperature);
-    Serial.println(F("°C"));
+    doc["temp"] = event.temperature;
   }
   // Get humidity event and print its value.
   dht.humidity().getEvent(&event);
@@ -39,10 +40,9 @@ bool getTemp()
     Serial.println(F("Error reading humidity!"));
   }
   else {
-    Serial.print(F("Humidity: "));
-    Serial.print(event.relative_humidity);
-    Serial.println(F("%"));
+    doc["hmd"] = event.relative_humidity;
   }
+  serializeJsonPretty(doc, Serial);
   return false;
 }
 
