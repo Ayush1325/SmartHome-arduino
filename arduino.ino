@@ -10,6 +10,7 @@
 #define RAINPIN 8
 #define LEDPIN 5
 #define FANPIN 6
+#define BUZZPIN 12
 #define SMOKEPIN A2
 #define FIREPIN A3
 #define FLOODPIN 7
@@ -36,7 +37,9 @@ enum inputMsg{
   LED_ON,
   LED_OFF,
   FAN_ON,
-  FAN_OFF
+  FAN_OFF,
+  BUZZ_ON,
+  BUZZ_OFF
 };
 
 void setup()
@@ -48,6 +51,8 @@ void setup()
     digitalWrite(LEDPIN, LOW);
     pinMode(FANPIN, OUTPUT);
     digitalWrite(FANPIN, LOW);
+    pinMode(BUZZPIN, OUTPUT);
+    digitalWrite(BUZZPIN, LOW);
     pinMode(SMOKEPIN, INPUT);
     pinMode(FIREPIN, INPUT);
     pinMode(FLOODPIN, INPUT);
@@ -133,5 +138,9 @@ void serialEvent() {
     digitalWrite(FANPIN, HIGH); 
   } else if (data == FAN_OFF) {
     digitalWrite(FANPIN, LOW); 
+  } else if (data == BUZZ_ON) {
+    digitalWrite(BUZZPIN, HIGH); 
+  } else if (data == BUZZ_OFF) {
+    digitalWrite(BUZZPIN, LOW); 
   }
 }
