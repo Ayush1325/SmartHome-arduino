@@ -79,7 +79,7 @@ void sendSensorInfo() {
   doc["hmd"] = getHumidity();
   doc["rain"] = getRain();
   doc["cloud"] = getCloud();
-  serializeJsonPretty(doc, Serial);
+  serializeMsgPack(doc, Serial);
 }
 
 float getTemp()
