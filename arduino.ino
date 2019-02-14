@@ -9,6 +9,7 @@
 #define EARTHPIN 2
 #define RAINPIN 8
 #define LEDPIN 5
+#define FANPIN 6
 #define SMOKEPIN A2
 #define FIREPIN A3
 #define FLOODPIN 7
@@ -33,7 +34,9 @@ enum inputMsg{
   FIRE,
   FLOOD,
   LED_ON,
-  LED_OFF
+  LED_OFF,
+  FAN_ON,
+  FAN_OFF
 };
 
 void setup()
@@ -43,6 +46,8 @@ void setup()
     pinMode(RAINPIN, INPUT);
     pinMode(LEDPIN, OUTPUT);
     digitalWrite(LEDPIN, LOW);
+    pinMode(FANPIN, OUTPUT);
+    digitalWrite(FANPIN, LOW);
     pinMode(SMOKEPIN, INPUT);
     pinMode(FIREPIN, INPUT);
     pinMode(FLOODPIN, INPUT);
@@ -124,5 +129,9 @@ void serialEvent() {
     digitalWrite(LEDPIN, HIGH); 
   } else if (data == LED_OFF) {
     digitalWrite(LEDPIN, LOW); 
+  } else if (data == FAN_ON) {
+    digitalWrite(FANPIN, HIGH); 
+  } else if (data == FAN_OFF) {
+    digitalWrite(FANPIN, LOW); 
   }
 }
