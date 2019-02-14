@@ -7,6 +7,7 @@
 #include <DHT_U.h>
 
 #define EARTHPIN 2
+#define LEDPIN 5
 #define DHTPIN A1// Digital pin connected to the DHT sensor 
 // Feather HUZZAH ESP8266 note: use pins 3, 4, 5, 12, 13 or 14 --
 // Pin 15 can work but DHT must be disconnected during program upload.
@@ -19,13 +20,17 @@ EvtManager mgr;
 
 enum inputMsg{
   SENSOR_INFO,
-  EARTHQUAKE 
+  EARTHQUAKE,
+  LED_ON,
+  LED_OFF
 };
 
 void setup()
 {
     Serial.begin(9600);
     pinMode(EARTHPIN, INPUT);
+    pinMode(LEDPIN, OUTPUT);
+    digitalWrite(LEDPIN, LOW);
     dht.begin();
     mgr.addListener(new EvtPinListener(EARTHPIN, (EvtAction)earthQuakeSens));
 }
@@ -62,7 +67,11 @@ void serialEvent() {
   int data = Serial.parseInt();
   if(data == SENSOR_INFO){
     getTemp();  
-  }  
+  } else if (data == LED_ON) {
+    digitalWrite(LEDPIN, HIGH); 
+  } else if (data == LED_OFF) {
+    digitalWrite(LEDPIN, LOW); 
+  }
 }
 
 USE_EVENTUALLY_LOOP(mgr) // Use this instead of your loop() function.
