@@ -16,11 +16,14 @@
 DHT_Unified dht(DHTPIN, DHTTYPE);
 EvtManager mgr;
 
+enum inputMsg{
+  SENSOR_INFO  
+};
+
 void setup()
 {
     Serial.begin(9600);
     dht.begin();
-    mgr.addListener(new EvtTimeListener(1000, true, (EvtAction)getTemp));
 }
 
 bool getTemp()
@@ -47,7 +50,10 @@ bool getTemp()
 }
 
 void serialEvent() {
-  Serial.println(Serial.readString());  
+  int data = Serial.parseInt();
+  if(data == SENSOR_INFO){
+    getTemp();  
+  }  
 }
 
 USE_EVENTUALLY_LOOP(mgr) // Use this instead of your loop() function.
