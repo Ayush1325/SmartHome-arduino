@@ -6,24 +6,28 @@
 #include <DHT.h>
 #include <DHT_U.h>
 
-#define DHTPIN A1     // Digital pin connected to the DHT sensor 
+#define EARTHPIN 2
+#define DHTPIN A1// Digital pin connected to the DHT sensor 
 // Feather HUZZAH ESP8266 note: use pins 3, 4, 5, 12, 13 or 14 --
 // Pin 15 can work but DHT must be disconnected during program upload.
 
 // Uncomment the type of sensor in use:
-#define DHTTYPE    DHT11     // DHT 11
+#define DHTTYPE DHT11     // DHT 11
 
 DHT_Unified dht(DHTPIN, DHTTYPE);
 EvtManager mgr;
 
 enum inputMsg{
-  SENSOR_INFO  
+  SENSOR_INFO,
+  EARTHQUAKE 
 };
 
 void setup()
 {
     Serial.begin(9600);
+    pinMode(EARTHPIN, INPUT);
     dht.begin();
+    mgr.addListener(new EvtPinListener(EARTHPIN, (EvtAction)earthQuakeSens));
 }
 
 bool getTemp()
@@ -47,6 +51,11 @@ bool getTemp()
   }
   serializeJsonPretty(doc, Serial);
   return false;
+}
+
+bool earthQuakeSens() {
+    Serial.println(EARTHQUAKE);
+    return true;
 }
 
 void serialEvent() {
