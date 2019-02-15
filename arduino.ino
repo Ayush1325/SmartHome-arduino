@@ -76,11 +76,14 @@ void setup()
   .onChange(HIGH, floodSens);
 }
 
-void loop() {
+void loop() 
+{
   automaton.run();
 }
 
-void sendSensorInfo() {
+//Get all sensor info and output MsgPack to serial.
+void sendSensorInfo() 
+{
   DynamicJsonDocument doc(52);
   doc["temp"] = getTemp();
   doc["hmd"] = getHumidity();
@@ -101,7 +104,8 @@ float getTemp()
   }
 }
 
-int getHumidity() {
+int getHumidity() 
+{
   sensors_event_t event;
   // Get humidity event and print its value.
   dht.humidity().getEvent(&event);
@@ -113,50 +117,65 @@ int getHumidity() {
   }
 }
 
-bool getRain() {
+bool getRain() 
+{
   if (digitalRead(RAINPIN) == 1) {
     return false;
   }
   return true;
 }
 
-bool getCloud() {
+bool getCloud() 
+{
   if (digitalRead(CLOUDPIN) == 1) {
     return false;
   }
   return true;
 }
 
-void earthQuakeSens(int idx, int v, int up) {
+void earthQuakeSens(int idx, int v, int up) 
+{
   Serial.println(EARTHQUAKE);
 }
 
-void fireSens(int idx, int v, int up) {
+void fireSens(int idx, int v, int up) 
+{
   Serial.println(FIRE);
 }
 
-void smokeSens(int idx, int v, int up) {
+void smokeSens(int idx, int v, int up) 
+{
   Serial.println(SMOKE);
 }
 
-void floodSens(int idx, int v, int up) {
+void floodSens(int idx, int v, int up) 
+{
   Serial.println(FLOOD);
 }
 
-void serialEvent() {
+//Gets called when serial input detected.
+void serialEvent() 
+{
   DynamicJsonDocument doc(29);
   deserializeMsgPack(doc, Serial);
   int act = doc["action"];
   int value = doc["value"];
   Serial.println(act);
   Serial.println(value);
-  if (act == SENSOR_INFO) {
+  if (act == SENSOR_INFO) 
+  {
     sendSensorInfo();
-  } else if (act == LED) {
+  } 
+  else if (act == LED) 
+  {
     analogWrite(LEDPIN, value);
-  }  else if (act == FAN) {
+  }  
+  else if (act == FAN) 
+  {
     analogWrite(FANPIN, value);
-  } else if (act == BUZZ) {
+  } 
+  else if (act == BUZZ) 
+  {
     analogWrite(BUZZPIN, value);
   }
 }
