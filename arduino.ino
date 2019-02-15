@@ -9,7 +9,7 @@
 //Devices
 #define LEDPIN 5
 #define FANPIN 6
-#define BUZZPIN 12
+#define BUZZPIN 9
 
 //Weather Sensors.
 #define EARTHPIN 2
@@ -31,56 +31,53 @@ Atm_digital fire;
 Atm_digital smoke;
 Atm_digital flood;
 
-enum inputMsg{
-  SENSOR_INFO,
+enum inputMsg {
   EARTHQUAKE,
   SMOKE,
   FIRE,
   FLOOD,
-  LED_ON,
-  LED_OFF,
-  FAN_ON,
-  FAN_OFF,
-  BUZZ_ON,
-  BUZZ_OFF
+  SENSOR_INFO,
+  LED,
+  FAN,
+  BUZZ
 };
 
 void setup()
 {
-    Serial.begin(9600);
-    pinMode(LEDPIN, OUTPUT);
-    digitalWrite(LEDPIN, LOW);
-    pinMode(FANPIN, OUTPUT);
-    digitalWrite(FANPIN, LOW);
-    pinMode(BUZZPIN, OUTPUT);
-    digitalWrite(BUZZPIN, LOW);
+  Serial.begin(9600);
+  pinMode(LEDPIN, OUTPUT);
+  analogWrite(LEDPIN, 0);
+  pinMode(FANPIN, OUTPUT);
+  analogWrite(FANPIN, 0);
+  pinMode(BUZZPIN, OUTPUT);
+  analogWrite(BUZZPIN, 0);
 
-    pinMode(DHTPIN, INPUT);
-    pinMode(RAINPIN, INPUT);
-    pinMode(CLOUDPIN, INPUT);
+  pinMode(DHTPIN, INPUT);
+  pinMode(RAINPIN, INPUT);
+  pinMode(CLOUDPIN, INPUT);
 
-    pinMode(EARTHPIN, INPUT);
-    pinMode(SMOKEPIN, INPUT);
-    pinMode(FIREPIN, INPUT);
-    pinMode(FLOODPIN, INPUT);
-    
-    dht.begin();
-    
-    earthquake.begin(EARTHPIN)
-              .onChange(HIGH, earthQuakeSens);
-              
-    fire.begin(FIREPIN)
-        .onChange(HIGH, fireSens);
-        
-    smoke.begin(SMOKEPIN)
-         .onChange(HIGH, smokeSens);
-        
-    flood.begin(FLOODPIN)
-         .onChange(HIGH, floodSens);
-} 
+  pinMode(EARTHPIN, INPUT);
+  pinMode(SMOKEPIN, INPUT);
+  pinMode(FIREPIN, INPUT);
+  pinMode(FLOODPIN, INPUT);
+
+  dht.begin();
+
+  earthquake.begin(EARTHPIN)
+  .onChange(HIGH, earthQuakeSens);
+
+  fire.begin(FIREPIN)
+  .onChange(HIGH, fireSens);
+
+  smoke.begin(SMOKEPIN)
+  .onChange(HIGH, smokeSens);
+
+  flood.begin(FLOODPIN)
+  .onChange(HIGH, floodSens);
+}
 
 void loop() {
-  automaton.run();  
+  automaton.run();
 }
 
 void sendSensorInfo() {
@@ -117,25 +114,25 @@ int getHumidity() {
 }
 
 bool getRain() {
-    if(digitalRead(RAINPIN) == 1) {
-      return false;  
-    }
-    return true;
+  if (digitalRead(RAINPIN) == 1) {
+    return false;
+  }
+  return true;
 }
 
 bool getCloud() {
-  if(digitalRead(CLOUDPIN) == 1) {
-    return false;  
-  }  
+  if (digitalRead(CLOUDPIN) == 1) {
+    return false;
+  }
   return true;
 }
 
 void earthQuakeSens(int idx, int v, int up) {
-   Serial.println(EARTHQUAKE);
+  Serial.println(EARTHQUAKE);
 }
 
 void fireSens(int idx, int v, int up) {
-  Serial.println(FIRE);  
+  Serial.println(FIRE);
 }
 
 void smokeSens(int idx, int v, int up) {
@@ -147,20 +144,19 @@ void floodSens(int idx, int v, int up) {
 }
 
 void serialEvent() {
-  int data = Serial.parseInt();
-  if(data == SENSOR_INFO){
-    sendSensorInfo();  
-  } else if (data == LED_ON) {
-    digitalWrite(LEDPIN, HIGH); 
-  } else if (data == LED_OFF) {
-    digitalWrite(LEDPIN, LOW); 
-  } else if (data == FAN_ON) {
-    digitalWrite(FANPIN, HIGH); 
-  } else if (data == FAN_OFF) {
-    digitalWrite(FANPIN, LOW); 
-  } else if (data == BUZZ_ON) {
-    digitalWrite(BUZZPIN, HIGH); 
-  } else if (data == BUZZ_OFF) {
-    digitalWrite(BUZZPIN, LOW); 
+  DynamicJsonDocument doc(29);
+  deserializeMsgPack(doc, Serial);
+  int act = doc["action"];
+  int value = doc["value"];
+  Serial.println(act);
+  Serial.println(value);
+  if (act == SENSOR_INFO) {
+    sendSensorInfo();
+  } else if (act == LED) {
+    analogWrite(LEDPIN, value);
+  }  else if (act == FAN) {
+    analogWrite(FANPIN, value);
+  } else if (act == BUZZ) {
+    analogWrite(BUZZPIN, value);
   }
 }
