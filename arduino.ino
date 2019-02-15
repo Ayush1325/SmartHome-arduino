@@ -91,6 +91,7 @@ void sendSensorInfo()
   doc["rain"] = getRain();
   doc["cloud"] = getCloud();
   serializeMsgPack(doc, Serial);
+  Serial.println();
 }
 
 void sendOtherActions(int act)
@@ -98,6 +99,7 @@ void sendOtherActions(int act)
   DynamicJsonDocument doc(15);
   doc["action"] = act;
   serializeMsgPack(doc, Serial);
+  Serial.println();
 }
 
 float getTemp()
