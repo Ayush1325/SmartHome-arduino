@@ -90,7 +90,7 @@ void sendSensorInfo()
   doc["hmd"] = getHumidity();
   doc["rain"] = getRain();
   doc["cloud"] = getCloud();
-  serializeMsgPack(doc, Serial);
+  serializeJson(doc, Serial);
   Serial.println();
 }
 
@@ -98,7 +98,7 @@ void sendOtherActions(int act)
 {
   DynamicJsonDocument doc(15);
   doc["action"] = act;
-  serializeMsgPack(doc, Serial);
+  serializeJson(doc, Serial);
   Serial.println();
 }
 
@@ -167,7 +167,7 @@ void floodSens(int idx, int v, int up)
 void serialEvent() 
 {
   DynamicJsonDocument doc(29);
-  deserializeMsgPack(doc, Serial);
+  deserializeJson(doc, Serial);
   int act = doc["action"];
   int value = doc["value"];
   if (act == SENSOR_INFO) 
