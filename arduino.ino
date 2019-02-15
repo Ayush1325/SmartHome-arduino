@@ -84,11 +84,19 @@ void loop()
 //Get all sensor info and output MsgPack to serial.
 void sendSensorInfo() 
 {
-  DynamicJsonDocument doc(52);
+  DynamicJsonDocument doc(67);
+  doc["action"] = SENSOR_INFO;
   doc["temp"] = getTemp();
   doc["hmd"] = getHumidity();
   doc["rain"] = getRain();
   doc["cloud"] = getCloud();
+  serializeMsgPack(doc, Serial);
+}
+
+void sendOtherActions(int act)
+{
+  DynamicJsonDocument doc(15);
+  doc["action"] = act;
   serializeMsgPack(doc, Serial);
 }
 
@@ -135,22 +143,22 @@ bool getCloud()
 
 void earthQuakeSens(int idx, int v, int up) 
 {
-  Serial.println(EARTHQUAKE);
+  sendOtherActions(EARTHQUAKE);
 }
 
 void fireSens(int idx, int v, int up) 
 {
-  Serial.println(FIRE);
+  sendOtherActions(FIRE);
 }
 
 void smokeSens(int idx, int v, int up) 
 {
-  Serial.println(SMOKE);
+  sendOtherActions(SMOKE);
 }
 
 void floodSens(int idx, int v, int up) 
 {
-  Serial.println(FLOOD);
+  sendOtherActions(FLOOD);
 }
 
 //Gets called when serial input detected.
@@ -160,8 +168,6 @@ void serialEvent()
   deserializeMsgPack(doc, Serial);
   int act = doc["action"];
   int value = doc["value"];
-  Serial.println(act);
-  Serial.println(value);
   if (act == SENSOR_INFO) 
   {
     sendSensorInfo();
