@@ -10,17 +10,19 @@
 #define LEDPIN 5
 #define FANPIN 6
 #define BUZZPIN 9
+#define RESETBTNPIN 4
 
 //Weather Sensors.
 #define EARTHPIN 2
 #define RAINPIN 8
-#define CLOUDPIN 4
+#define CLOUDPIN A0
 
 //Other Sensors.
 #define SMOKEPIN A2
 #define FIREPIN A3
-#define FLOODPIN 7
+#define FLOODPIN A4
 #define DHTPIN A1
+#define FLAMEPIN A5
 
 #define DHTTYPE DHT11
 
@@ -30,6 +32,8 @@ Atm_digital earthquake;
 Atm_digital fire;
 Atm_digital smoke;
 Atm_digital flood;
+Atm_digital flame;
+Atm_button reset_btn;
 
 enum inputMsg {
   EARTHQUAKE,
@@ -39,7 +43,9 @@ enum inputMsg {
   SENSOR_INFO,
   LED,
   FAN,
-  BUZZ
+  BUZZ,
+  FLAME,
+  RESET
 };
 
 void setup()
@@ -51,6 +57,7 @@ void setup()
   analogWrite(FANPIN, 0);
   pinMode(BUZZPIN, OUTPUT);
   analogWrite(BUZZPIN, 0);
+  pinMode(RESETBTNPIN, INPUT);
 
   pinMode(DHTPIN, INPUT);
   pinMode(RAINPIN, INPUT);
@@ -74,6 +81,12 @@ void setup()
 
   flood.begin(FLOODPIN)
   .onChange(HIGH, floodSens);
+
+  flame.begin(FLAMEPIN)
+  .onChange(flameSens);
+
+  reset_btn.begin(RESETBTNPIN)
+  .onPress(reset);
 }
 
 void loop() 
@@ -81,11 +94,12 @@ void loop()
   automaton.run();
 }
 
-//Get all sensor info and output MsgPack to serial.
+//Get all sensor info and output Json to serial.
 void sendSensorInfo() 
 {
   DynamicJsonDocument doc(67);
-  doc["action"] = SENSOR_INFO;
+  int act = SENSOR_INFO;
+  doc["action"] = act;
   doc["temp"] = getTemp();
   doc["hmd"] = getHumidity();
   doc["rain"] = getRain();
@@ -137,10 +151,32 @@ bool getRain()
 
 bool getCloud() 
 {
-  if (digitalRead(CLOUDPIN) == 1) {
+  if (analogRead(CLOUDPIN) > 500) {
     return false;
   }
   return true;
+}
+
+void flameSens(int idx, int v, int up)
+{
+  DynamicJsonDocument doc(29);
+  int act = FLAME;
+  doc["action"] = act;
+  if(digitalRead(FLAMEPIN))
+  {
+    doc["state"] = false;
+  }
+  else 
+  {
+      doc["state"] = true;
+  }
+  serializeJson(doc, Serial);
+  Serial.println();
+}
+
+void reset(int idx, int v, int up)
+{
+  sendOtherActions(RESET);
 }
 
 void earthQuakeSens(int idx, int v, int up) 
