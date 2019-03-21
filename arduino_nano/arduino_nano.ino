@@ -6,11 +6,10 @@
 #include <DHT.h>
 #include <DHT_U.h>
 
-//Devices
-#define LEDPIN 5
-#define FANPIN 6
-#define BUZZPIN 9
 #define RESETBTNPIN 4
+#define LED1BTNPIN 3
+#define LED2BTNPIN 5
+#define FANBTNPIN 6
 
 //Weather Sensors.
 #define EARTHPIN 2
@@ -25,7 +24,6 @@
 #define FLAMEPIN A5
 
 #define DHTTYPE DHT11
-
 DHT_Unified dht(DHTPIN, DHTTYPE);
 
 Atm_digital earthquake;
@@ -34,29 +32,24 @@ Atm_digital smoke;
 Atm_digital flood;
 Atm_digital flame;
 Atm_button reset_btn;
+Atm_button led1_btn;
+Atm_button led2_btn;
+Atm_button fan_btn;
 
-enum inputMsg {
+enum msg {
   EARTHQUAKE,
   SMOKE,
   FIRE,
   FLOOD,
   SENSOR_INFO,
-  LED,
-  FAN,
-  BUZZ,
   FLAME,
-  RESET
+  RESET,
+  LED1,
+  LED2,
+  FAN
 };
 
-void setup()
-{
-  Serial.begin(9600);
-  pinMode(LEDPIN, OUTPUT);
-  analogWrite(LEDPIN, 0);
-  pinMode(FANPIN, OUTPUT);
-  analogWrite(FANPIN, 0);
-  pinMode(BUZZPIN, OUTPUT);
-  analogWrite(BUZZPIN, 0);
+void setup() {
   pinMode(RESETBTNPIN, INPUT);
 
   pinMode(DHTPIN, INPUT);
@@ -69,6 +62,7 @@ void setup()
   pinMode(FLOODPIN, INPUT);
 
   dht.begin();
+  Serial.begin(9600);
 
   earthquake.begin(EARTHPIN)
   .onChange(HIGH, earthQuakeSens);
@@ -87,14 +81,21 @@ void setup()
 
   reset_btn.begin(RESETBTNPIN)
   .onPress(reset);
+
+  led1_btn.begin(LED1BTNPIN)
+  .onPress(led1);
+
+  led2_btn.begin(LED2BTNPIN)
+  .onPress(led2);
+
+  fan_btn.begin(FANBTNPIN)
+  .onPress(fan);
 }
 
-void loop() 
-{
+void loop() {
   automaton.run();
 }
 
-//Get all sensor info and output Json to serial.
 void sendSensorInfo() 
 {
   DynamicJsonDocument doc(67);
@@ -151,7 +152,7 @@ bool getRain()
 
 bool getCloud() 
 {
-  if (analogRead(CLOUDPIN) > 500) {
+  if (digitalRead(CLOUDPIN) == 0) {
     return false;
   }
   return true;
@@ -179,6 +180,21 @@ void reset(int idx, int v, int up)
   sendOtherActions(RESET);
 }
 
+void led1(int idx, int v, int up)
+{
+  sendOtherActions(LED1);
+}
+
+void led2(int idx, int v, int up)
+{
+  sendOtherActions(LED2);
+}
+
+void fan(int idx, int v, int up)
+{
+  sendOtherActions(FAN);
+}
+
 void earthQuakeSens(int idx, int v, int up) 
 {
   sendOtherActions(EARTHQUAKE);
@@ -202,24 +218,11 @@ void floodSens(int idx, int v, int up)
 //Gets called when serial input detected.
 void serialEvent() 
 {
-  DynamicJsonDocument doc(29);
+  DynamicJsonDocument doc(15);
   deserializeJson(doc, Serial);
   int act = doc["action"];
-  int value = doc["value"];
   if (act == SENSOR_INFO) 
   {
     sendSensorInfo();
-  } 
-  else if (act == LED) 
-  {
-    analogWrite(LEDPIN, value);
-  }  
-  else if (act == FAN) 
-  {
-    analogWrite(FANPIN, value);
-  } 
-  else if (act == BUZZ) 
-  {
-    analogWrite(BUZZPIN, value);
   }
 }
